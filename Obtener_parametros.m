@@ -41,6 +41,8 @@ resultado = table(Hvals(:), tiempoEstanque_01(:), tiempoEstanque_02(:), ...
 
 disp(resultado)
 
+writetable(resultado, 'resultado_estanques.csv')
+
 function [t, y] = getSignalData(sig)
 if isa(sig, 'timeseries')
     t = sig.Time;
