@@ -11,7 +11,7 @@ tiempoEstanque_01 = NaN(size(Hvals));										%Variables donde se asignara el t
 tiempoEstanque_02 = NaN(size(Hvals));										%en cada iteracion.
 
 for k = 1:numel(Hvals)														%Ciclo que ejecuta las 50 iteraciones del modelo en Simulink.
-    H = Hvals(k); %#ok<NASGU>											
+    H = Hvals(k);											
 
     out = sim(modelo, 'ReturnWorkspaceOutputs', 'on');						%Utiliza el bloque "To Workspace" de cada estanque y almacena los valores de salida en la simulacion
 
