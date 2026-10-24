@@ -205,7 +205,7 @@ def dividir_datos(X: pd.DataFrame, y: pd.Series):
         X,
         y,
         test_size=0.25,
-        random_state=10,
+        random_state=42,
         stratify=estratificar
     )
 
