@@ -1,1 +1,61 @@
+%Definición del ejemplo
+num_1=1;
+den_1=[1 3 2];
+F=tf(num_1, den_1);
+disp(F)
+f=roots(den_1);
+disp(f)
+if all(real(f)<0)
+    disp('Sistema estable según Routh-Hurwitz');
+else
+    disp('Sistema inestable según Routh-Hurwitz');
+end
+%%
+%Se define la función de transferencia péndulo invertido
+num=10;
+den=[1 0 19.62];
+G = tf(num,den);
+disp(G)
+%%
+r = roots(den);
+disp(r)
+% Comprobación de estabilidad
+if all(real(r) < 0)
+    disp('Sistema estable según Routh-Hurwitz');
+else
+    disp('Sistema inestable según Routh-Hurwitz');
+end
+%% Implementación de controlador K proporcional
+% 1. Volvemos a definir la ecuación de transferencia
+num_G = 10;
+den_G = [1 0 19.62];
 
+% 2. Vector con diferentes valores de K a evaluar
+K_valores = [-5, -1.962, 0, 0.5, 2, 10, 100];
+
+% Encabezado
+fprintf('\n%-8s | %-25s | %-35s\n', 'K', 'Polos de lazo cerrado', 'Resultado (Criterio Inicial)');
+fprintf('%s\n', repmat('-', 1, 75));
+
+% 3. Evaluación iterativa
+for K = K_valores
+    % Ecuación característica de lazo cerrado: s^2 + 0s + (19.62 + 10*K) = 0
+    den_T = [1, 0, 19.62 + 10*K];
+    r = roots(den_T);
+
+    % Formato seguro para mostrar los polos
+    if isempty(r)
+        polos_str = 'Sin polos';
+    elseif isreal(r)
+        polos_str = sprintf('%.2f,  %.2f', r(1), r(2));
+    else
+        polos_str = sprintf('%+.2fj, %+.2fj', imag(r(1)), imag(r(2)));
+    end
+
+    if ~isempty(r) && all(real(r) < 0)
+        evaluacion = 'Sistema estable según Routh-Hurwitz';
+    else
+        evaluacion = 'Sistema inestable según Routh-Hurwitz';
+    end
+    fprintf('%-8.3f | %-25s | %-35s\n', K, polos_str, evaluacion);
+end
