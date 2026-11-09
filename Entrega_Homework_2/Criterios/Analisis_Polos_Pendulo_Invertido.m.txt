@@ -1,0 +1,127 @@
+%% HOMEWORK 2 - ANALISIS POR UBICACION DE POLOS
+% Pendulo invertido sobre un carro
+% Modelo entregado en la PPT:
+% G(s) = Theta(s)/F(s) = 10/(s^2 - 19.62)
+%
+% Este script:
+% 1) Calcula y grafica los polos en lazo abierto.
+% 2) Grafica la respuesta a un escalon de fuerza de 1 N.
+% 3) Incorpora un controlador proporcional K con realimentacion unitaria.
+% 4) Calcula y grafica los polos en lazo cerrado.
+% 5) Grafica la respuesta a una referencia angular pequena.
+% 6) Muestra el lugar de las raices para variar K.
+
+clear; clc; close all;
+
+%% 1. Modelo en lazo abierto
+num = 10;
+den = [1 0 -19.62];
+G = tf(num, den);
+
+disp('Funcion de transferencia en lazo abierto:');
+G
+
+p_ol = pole(G);
+disp('Polos en lazo abierto:');
+disp(p_ol);
+
+%% 2. Grafico de polos en lazo abierto
+figure('Name','Polos - lazo abierto');
+pzmap(G);
+grid on;
+title('Ubicacion de polos - sistema sin controlador');
+xlabel('Parte real (1/s)');
+ylabel('Parte imaginaria (1/s)');
+hold on;
+xline(0,'--k','Eje imaginario');
+yline(0,':k');
+
+%% 3. Respuesta a un escalon de fuerza de 1 N
+% Condiciones iniciales: theta(0)=0 y theta_dot(0)=0.
+% Solucion analitica: theta(t) = 10/19.62 * (cosh(sqrt(19.62)*t)-1)
+t_ol = linspace(0,0.8,1000);
+a = sqrt(19.62);
+theta_ol = (10/19.62)*(cosh(a*t_ol)-1);
+
+figure('Name','Respuesta sin controlador');
+plot(t_ol,theta_ol,'LineWidth',1.6);
+grid on;
+xlabel('Tiempo (s)');
+ylabel('Angulo theta (rad)');
+title('Respuesta sin controlador - escalon de fuerza de 1 N');
+
+%% 4. Control proporcional y realimentacion negativa unitaria
+Kcrit = 19.62/10;
+K = 5;                 % Ganancia elegida para ilustrar el caso marginal
+Tcl = feedback(K*G,1);
+
+disp('Ganancia critica:');
+disp(Kcrit);
+disp('Ganancia proporcional seleccionada:');
+disp(K);
+disp('Funcion de transferencia en lazo cerrado:');
+Tcl
+
+p_cl = pole(Tcl);
+disp('Polos en lazo cerrado:');
+disp(p_cl);
+
+%% 5. Grafico de polos en lazo cerrado
+figure('Name','Polos - lazo cerrado');
+pzmap(Tcl);
+grid on;
+title(['Ubicacion de polos - lazo cerrado, K = ',num2str(K)]);
+xlabel('Parte real (1/s)');
+ylabel('Parte imaginaria (1/s)');
+hold on;
+xline(0,'--k','Eje imaginario');
+yline(0,':k');
+
+%% 6. Respuesta a una referencia angular de 0.05 rad
+% Se utiliza una referencia pequena para ser coherente con la
+% aproximacion de pequenas oscilaciones del modelo linealizado.
+r0 = 0.05;             % rad
+t_cl = linspace(0,5,2000);
+[y_cl,t_out] = step(r0*Tcl,t_cl);
+
+figure('Name','Respuesta con controlador proporcional');
+plot(t_out,y_cl,'LineWidth',1.6);
+hold on;
+yline(r0,'--k','Referencia = 0.05 rad');
+grid on;
+xlabel('Tiempo (s)');
+ylabel('Angulo theta (rad)');
+title(['Respuesta con controlador proporcional - K = ',num2str(K)]);
+
+%% 7. Lugar de las raices: evolucion de los polos al variar K
+figure('Name','Trayectoria de polos al variar K');
+rlocus(G);
+grid on;
+title('Lugar de las raices del sistema con controlador proporcional');
+xlabel('Parte real (1/s)');
+ylabel('Parte imaginaria (1/s)');
+hold on;
+xline(0,'--k','Eje imaginario');
+yline(0,':k');
+
+%% 8. Resumen numerico
+omega = sqrt(10*K-19.62);
+periodo = 2*pi/omega;
+factor = 10*K/(10*K-19.62);
+theta_max = r0*2*factor;
+
+fprintf('\n===== RESUMEN DEL ANALISIS POR POLOS =====\n');
+fprintf('Polos en lazo abierto: %.4f y %.4f\n',p_ol(1),p_ol(2));
+fprintf('K critica: %.4f\n',Kcrit);
+fprintf('K seleccionado: %.4f\n',K);
+fprintf('Polos en lazo cerrado: %.4f%+.4fj y %.4f%+.4fj\n', ...
+    real(p_cl(1)),imag(p_cl(1)),real(p_cl(2)),imag(p_cl(2)));
+fprintf('Frecuencia natural no amortiguada: %.4f rad/s\n',omega);
+fprintf('Periodo de oscilacion: %.4f s\n',periodo);
+fprintf('Maximo teorico para referencia de %.3f rad: %.4f rad\n',r0,theta_max);
+
+% CONCLUSION:
+% K < 1.962: un polo positivo y uno negativo -> inestable.
+% K = 1.962: polo doble en el origen -> no asintoticamente estable.
+% K > 1.962: polos imaginarios puros simples -> estabilidad marginal.
+% Ningun K proporcional real consigue estabilidad asintotica.
