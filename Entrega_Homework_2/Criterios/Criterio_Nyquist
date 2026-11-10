@@ -1,1 +1,50 @@
+%% Datos del modelo dinámico del péndulo invertido 
+M = 1; %Masa del carro en kg
+m = 0.1; %Masa del péndulo en kg
+l = 0.5; %Longitud del péndulo en m
+g = 9.81; %Gravedad en m/s^2
 
+%% Función de transferencia del sistema dinámico
+num = [10];
+den = [1 0 19.62];
+G = tf(num, den);
+
+%% Frecuencias obtenidas del modelo dinámico
+w0 = sqrt(19.62);   % Frecuencia natural del modelo
+wc = sqrt(29.62);   % Frecuencia de corte del diagrama con el punto crítico (-1,0)
+fprintf('Frecuenca natural: %.4f rad/s\n', w0);
+fprintf('Frecuencia de corte con -1: %.4f rad/s\n', wc');
+
+%% Diagrama de Nyquist del péndulo invertido
+figure;
+nyquist(G);
+title('Diagrama de Nyquist para G(s) = 10 / s^2 + 19.62');
+grid on;
+
+%% Escribimos las frencuencias evitando la singularidad del gráfico
+w1 = linspace(0, w0-1e-3, 2500);
+w2 = linspace(w0+1e-3, 30, 5000);
+w = [w1 w2];
+
+% Respuesta en frecuencia del sistema
+L = squeeze(freqresp(G,w));
+figure;
+plot(real(L), imag(L), 'b', 'LineWidth', 1.3);
+hold on;
+
+% Punto critico de Nyquist
+plot(-1, 0, 'rx', 'MarkerSize', 12, ...
+    'LineWidth', 2);
+
+xline(0, 'k:');
+yline(0, 'k:');
+
+grid on;
+xlim([-2 1]);
+ylim([-0.1 0.1]);
+
+xlabel('Real Axis');
+ylabel('Imaginary Axis');
+
+title('Nyquist: Ampliación del punto critico (-1,0)');
+legend('G(jw)', 'Punto critico -1');
